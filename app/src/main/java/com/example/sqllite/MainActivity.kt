@@ -2,6 +2,9 @@ package com.example.sqllite
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
@@ -32,7 +35,6 @@ class MainActivity : AppCompatActivity() {
         val listview = findViewById<ListView>(R.id.lv)
 
         AddBtn.setOnClickListener{
-
             val nom = nom_edtxt.text.toString()
             val price = prix_edtxt.text.toString().toDoubleOrNull()
             val image = image_edtxt.text.toString()
@@ -46,7 +48,6 @@ class MainActivity : AppCompatActivity() {
             }else{
                 Toast.makeText(this, "Please complete all fields!", Toast.LENGTH_SHORT).show()
             }
-
         }
 
         listview.setOnItemClickListener { _, _, position, _ ->
@@ -77,7 +78,39 @@ class MainActivity : AppCompatActivity() {
         }
 
         arrayAdapter.notifyDataSetChanged()
+
+
+//        Recherche
+
+        val searchED = findViewById<EditText>(R.id.searchEd)
+        searchED.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val searchQuery = s.toString().trim()
+                if (searchQuery.isNotEmpty()) {
+                    val smartphones = SmartPhoneDatabase.getDataBase(applicationContext)
+                        .smartphoneDao()
+                        .searchSmartphonesByName(searchQuery)
+
+                    val filteredResults = smartphones.map { "${it.nom} - ${it.prix} Dh" }
+
+
+                    val adapter = ArrayAdapter(this@MainActivity, android.R.layout.simple_list_item_1, filteredResults)
+                    listViewSmartphones.adapter = adapter
+
+                    if (filteredResults.isEmpty()) {
+                        Toast.makeText(this@MainActivity, "Aucun produit trouvé", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    fetchData()
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+        })
     }
+
 
     override fun onResume() {
         super.onResume()

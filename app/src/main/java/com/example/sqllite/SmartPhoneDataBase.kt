@@ -32,6 +32,9 @@ interface SmartphoneDao{
 
     @Query("DELETE FROM smartphone_table WHERE id = :id")
     fun deleteSmartphoneById(id: Int)
+
+    @Query("SELECT * FROM smartphone_table WHERE nom LIKE '%' || :query || '%'")
+    fun searchSmartphonesByName(query: String): List<SmartPhone>
 }
 
 @Database(entities = [SmartPhone::class], version = 1, exportSchema = false)
